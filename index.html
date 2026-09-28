@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Manage Me</title>
+<meta name="theme-color" content="#121316">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Manage Me">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{
+  --bg:#121316; --bg2:#1a1c20; --card:#202226; --card2:#26292e; --border:#33363c;
+  --text:#eceef1; --text2:#9ba0a8; --accent:#7c9fff; --accent2:#5b7fe0;
+  --danger:#e5636b; --danger2:#c94a52; --ok:#5cd68a; --warn:#e0a75a; --star:#f2c94c; --starOff:#3a3d43;
+  --radius:16px;
+}
+:root:not([data-theme="dark"]){
+  --bg:#f4f5f7; --bg2:#ffffff; --card:#ffffff; --card2:#eef0f3; --border:#dde0e5;
+  --text:#1c1e21; --text2:#666b74; --accent:#3860d6; --accent2:#2c4bb0;
+  --danger:#c73a42; --danger2:#a92e35; --ok:#1f9d5c; --warn:#b5790f; --star:#d69a12; --starOff:#d8dadd;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  margin:0;font-family:'Inter',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  background:var(--bg);color:var(--text);
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  overscroll-behavior-y:none;
+}
+button{font-family:inherit;}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+header{
+  position:sticky;top:0;z-index:5;padding:14px 16px calc(10px + env(safe-area-inset-top,0px));
+  padding-top:calc(14px + env(safe-area-inset-top,0px));
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+header h1{font-size:19px;margin:0;flex:1;font-weight:800;letter-spacing:.2px;}
+.iconbtn{
+  background:var(--card2);border:1px solid var(--border);color:var(--text);
+  border-radius:11px;width:38px;height:38px;font-size:17px;display:flex;
+  align-items:center;justify-content:center;cursor:pointer;transition:transform .12s;
+}
+.iconbtn:active{transform:scale(.92);}
+.iconbtn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn.inc{flex:0 0 auto;min-width:56px;}
+.tabs{display:flex;gap:8px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);}
+.tab{
+  flex:1;padding:9px;text-align:center;border-radius:11px;border:1px solid var(--border);
+  background:var(--card);color:var(--text2);cursor:pointer;font-weight:700;font-size:13.5px;
+  transition:background .15s,color .15s,transform .12s;
+}
+.tab:active{transform:scale(.97);}
+.tab.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:var(--accent);}
+.toolbar{display:flex;gap:8px;padding:10px 16px;background:var(--bg);}
+.toolbar input[type=text]{
+  flex:1;padding:11px 14px;border-radius:11px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:15px;min-width:0;
+}
+.toolbar input::placeholder{color:var(--text2);}
+main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 16px 90px;scroll-padding-top:env(safe-area-inset-top,0px);}
+.empty{text-align:center;color:var(--text2);padding:70px 20px;font-size:15px;}
+.empty .emoji{font-size:42px;display:block;margin-bottom:14px;}
+@keyframes cardIn{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+.card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:13px 15px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.12);
+  animation:cardIn .22s ease;transition:transform .12s;
+}
+.card:active{transform:scale(.99);}
+.card-top{display:flex;align-items:flex-start;gap:10px;}
+.card-title{font-weight:700;font-size:16px;flex:1;word-break:break-word;line-height:1.3;}
+.card-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;align-items:center;}
+.pill{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:12.5px;color:var(--text2);font-weight:600;}
+.tagchip{border-radius:20px;padding:4px 11px;font-size:12.5px;color:#fff;font-weight:700;}
+.stars{display:flex;gap:1px;font-size:13.5px;color:var(--star);background:var(--card2);padding:4px 11px;border-radius:20px;border:1px solid var(--border);}
+.stars.unranked{color:var(--starOff);}
+.card-actions{display:flex;gap:8px;margin-top:11px;}
+.btn{
+  border-radius:10px;border:1px solid var(--border);background:var(--card2);color:var(--text);
+  padding:8px 12px;font-size:13.5px;font-weight:700;cursor:pointer;flex:1;text-align:center;
+  transition:transform .12s;
+}
+.btn:active{transform:scale(.96);}
+.btn.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:var(--accent);color:#fff;}
+.btn.danger{background:linear-gradient(135deg,var(--danger),var(--danger2));border-color:var(--danger);color:#fff;}
+.fab{
+  position:fixed;right:20px;bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  border:none;font-size:27px;box-shadow:0 6px 18px rgba(80,110,230,.45);cursor:pointer;z-index:6;transition:transform .12s;
+}
+.fab:active{transform:scale(.92);}
+.overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:none;
+  align-items:flex-end;justify-content:center;
+}
+.overlay.show{display:flex;}
+.sheet{
+  width:100%;max-width:560px;max-height:88dvh;background:var(--bg2);border-radius:20px 20px 0 0;
+  padding:18px 18px calc(20px + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;
+  animation:sheetUp .22s ease;
+}
+@keyframes sheetUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+.sheet h2{margin:0 0 12px;font-size:18.5px;font-weight:800;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:12.5px;color:var(--text2);margin-bottom:5px;font-weight:700;}
+.field input[type=text],.field input[type=number]{
+  width:100%;padding:12px 13px;border-radius:11px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--text);font-size:15px;transition:border-color .15s;
+}
+.field input:focus{outline:none;border-color:var(--accent);}
+.field input.err{border-color:var(--danger);}
+.errmsg{color:var(--danger);font-size:12.5px;margin-top:4px;font-weight:600;}
+.row2{display:flex;gap:10px;}
+.row2>.field{flex:1;}
+.ratepick{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+.ratebtn{
+  width:31px;height:31px;border-radius:9px;border:1px solid var(--border);background:var(--card);
+  color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:transform .1s;
+}
+.ratebtn:active{transform:scale(.9);}
+.ratebtn.sel{background:var(--star);border-color:var(--star);color:#1a1a1a;}
+.tagpicklist{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;}
+.tagopt{
+  border-radius:20px;padding:6px 13px;font-size:13px;border:1.5px solid var(--border);
+  background:var(--card);color:var(--text2);cursor:pointer;font-weight:700;transition:transform .1s;
+}
+.tagopt:active{transform:scale(.95);}
+.tagopt.sel{color:#fff;border-color:transparent;}
+.sheet-actions{display:flex;gap:10px;margin-top:18px;}
+.togglerow{display:flex;gap:8px;margin-top:6px;}
+.togglebtn{flex:1;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12.5px;font-weight:700;cursor:pointer;}
+.togglebtn.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:var(--accent);}
+.small{font-size:12px;color:var(--text2);margin-top:4px;}
+select{padding:9px 10px;border-radius:11px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:14px;}
+.hint{font-size:12.5px;color:var(--text2);margin-top:10px;line-height:1.5;}
+.logrow{border-bottom:1px solid var(--border);padding:9px 0;}
+.toast{
+  position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%) translateY(16px);background:var(--card2);border:1px solid var(--border);
+  color:var(--text);padding:11px 18px;border-radius:13px;font-size:13.5px;font-weight:600;
+  box-shadow:0 8px 22px rgba(0,0,0,.3);opacity:0;transition:opacity .25s,transform .25s;
+  z-index:40;pointer-events:none;max-width:85vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="iconbtn" id="menuBtn">☰</button>
+    <h1>Manage Me</h1>
+    <button class="iconbtn" id="themeBtn">🌙</button>
+  </header>
+  <div class="tabs">
+    <div class="tab active" data-type="anime">Anime</div>
+    <div class="tab" data-type="manga">Manga</div>
+  </div>
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search title…">
+    <select id="sortSel">
+      <option value="edited_desc">Recently edited</option>
+      <option value="added_desc">Recently added</option>
+      <option value="title_asc">Title A–Z</option>
+      <option value="rating_desc">Rating high→low</option>
+      <option value="progress_desc">Progress high→low</option>
+    </select>
+    <button class="iconbtn" id="tagFilterBtn">🏷</button>
+  </div>
+  <main id="list"></main>
+  <button class="fab" id="addBtn">+</button>
+</div>
+
+<div class="overlay" id="editOverlay"><div class="sheet" id="editSheet"></div></div>
+<div class="overlay" id="tagFilterOverlay"><div class="sheet" id="tagFilterSheet"></div></div>
+<div class="overlay" id="menuOverlay"><div class="sheet" id="menuSheet"></div></div>
+<div class="overlay" id="welcomeOverlay"><div class="sheet" id="welcomeSheet"></div></div>
+
+<script>
+// ---------- storage: IndexedDB (no practical size cap besides device disk) ----------
+const DB_NAME='manage_me_db', DB_STORE='kv';
+function idbOpen(){
+  return new Promise((resolve,reject)=>{
+    if(typeof indexedDB==='undefined'){ reject(new Error('IndexedDB not supported in this browser')); return; }
+    const req=indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded=()=>{ req.result.createObjectStore(DB_STORE); };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>reject(req.error);
+  });
+}
+const dbPromise = idbOpen().catch(e=>{ logError(e,'idbOpen'); return null; });
+async function idbGet(key){
+  const db=await dbPromise; if(!db) return undefined;
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,'readonly');
+    const req=tx.objectStore(DB_STORE).get(key);
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function idbSet(key,value){
+  const db=await dbPromise; if(!db) throw new Error('IndexedDB unavailable');
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).put(value,key);
+    tx.oncomplete=()=>resolve(true); tx.onerror=()=>reject(tx.error);
+  });
+}
+
+// ---------- debug / error log ----------
+let errorLog=[];
+function logError(err,context){
+  try{
+    const entry={ time:new Date().toISOString(), context:context||'', message:(err&&err.message)||String(err), stack:(err&&err.stack)||'' };
+    errorLog.unshift(entry);
+    if(errorLog.length>50) errorLog.length=50;
+    idbSet('error_log', errorLog).catch(()=>{});
+  }catch(e){}
+}
+window.addEventListener('error', ev=>logError(ev.error||ev.message,'window error'));
+window.addEventListener('unhandledrejection', ev=>logError(ev.reason,'unhandled promise rejection'));
+
+function toast(msg){
+  let el=document.getElementById('toastEl');
+  if(!el){ el=document.createElement('div'); el.id='toastEl'; el.className='toast'; document.body.appendChild(el); }
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+// ---------- app state ----------
+function defaultState(){ return {theme:'dark', entries:[], tags:[], activeType:'anime', onboarded:false, sort:'edited_desc', lastExport:null, filters:{include:[],exclude:[],mode:'AND'}}; }
+let state = defaultState();
+async function save(){
+  try{ await idbSet('app_state', state); }
+  catch(e){ logError(e,'save'); toast('Could not save changes — see Debug Log in menu.'); }
+}
+function uid(){ return 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function nowIso(){ return new Date().toISOString(); }
+function fmtDate(iso){ if(!iso) return '—'; const d=new Date(iso); return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); }
+function fmtDateTime(iso){ const d=new Date(iso); return d.toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+
+// ---------- overlays (Android back button closes sheets instead of the app) ----------
+const overlayStack=[]; let pendingBack=0;
+function openOverlay(id){
+  const el=document.getElementById(id); if(el.classList.contains('show')) return;
+  el.classList.add('show'); overlayStack.push(id);
+  if(overlayStack.length===1){ try{ history.pushState({ov:1},''); }catch(e){} }
+}
+function closeOverlay(id){
+  const el=document.getElementById(id); if(!el.classList.contains('show')) return;
+  el.classList.remove('show');
+  const i=overlayStack.lastIndexOf(id); if(i>=0) overlayStack.splice(i,1);
+  if(overlayStack.length===0){ try{ pendingBack++; history.back(); }catch(e){ pendingBack--; } }
+}
+window.addEventListener('popstate',()=>{
+  if(pendingBack>0){ pendingBack--; return; }
+  const id=overlayStack.pop();
+  if(id) document.getElementById(id).classList.remove('show');
+  if(overlayStack.length>0){ try{ history.pushState({ov:1},''); }catch(e){} }
+});
+
+// ---------- theme ----------
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', state.theme==='light'?'light':'dark');
+  document.getElementById('themeBtn').textContent = state.theme==='light'?'☀️':'🌙';
+  const tc=document.querySelector('meta[name=theme-color]'); if(tc) tc.content = state.theme==='light'?'#ffffff':'#121316';
+}
+document.getElementById('themeBtn').onclick=()=>{ state.theme = state.theme==='light'?'dark':'light'; save(); applyTheme(); };
+
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); state.activeType=t.dataset.type; save(); renderList();
+});
+function syncActiveTab(){ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.type===state.activeType)); }
+
+let searchTimer=null;
+document.getElementById('search').oninput=()=>{ clearTimeout(searchTimer); searchTimer=setTimeout(renderList,150); };
+document.getElementById('sortSel').onchange=(ev)=>{ state.sort=ev.target.value; save(); renderList(); };
+
+// ---------- validation helpers ----------
+const urlLike = s => /^https?:\/\/[^\s]+\.[^\s]{2,}/i.test(s.trim());
+function validateEntry(vals){
+  const errs={};
+  const title=vals.title.trim(), link=vals.link.trim(), chap=vals.chapter.trim();
+  if(!title) errs.title='Title is required.';
+  if(!link) errs.link='Link is required.';
+  if(!chap) errs.chapter = state.activeType==='anime' ? 'Episode number is required.' : 'Chapter number is required.';
+  if(link && !urlLike(link)) errs.link = "This doesn't look like a link (needs http:// or https://).";
+  if(title && urlLike(title)) errs.title = 'This looks like a link — did you swap Title and Link?';
+  if(chap && (isNaN(Number(chap)) || Number(chap)<0)) errs.chapter='Must be a number (0 or higher).';
+  return errs;
+}
+
+// ---------- list rendering ----------
+function currentEntries(){
+  const type=state.activeType;
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const {include,exclude,mode}=state.filters;
+  let list = state.entries.filter(e=>e.type===type);
+  if(q) list=list.filter(e=>e.title.toLowerCase().includes(q));
+  if(include.length){
+    list = list.filter(e=>{
+      const tags=e.tags||[];
+      return mode==='AND' ? include.every(t=>tags.includes(t)) : include.some(t=>tags.includes(t));
+    });
+  }
+  if(exclude.length) list = list.filter(e=> !(e.tags||[]).some(t=>exclude.includes(t)) );
+  const sort=document.getElementById('sortSel').value;
+  list = list.slice().sort((a,b)=>{
+    if(sort==='title_asc') return a.title.localeCompare(b.title);
+    if(sort==='added_desc') return new Date(b.dateAdded)-new Date(a.dateAdded);
+    if(sort==='rating_desc') return (b.rating??-1)-(a.rating??-1);
+    if(sort==='progress_desc') return (parseFloat(b.chapter)||0)-(parseFloat(a.chapter)||0);
+    return new Date(b.dateEdited)-new Date(a.dateEdited);
+  });
+  return list;
+}
+function tagById(id){ return state.tags.find(t=>t.id===id); }
+function updateTabCounts(){
+  const a=state.entries.filter(e=>e.type==='anime').length;
+  const m=state.entries.filter(e=>e.type==='manga').length;
+  document.querySelector('.tab[data-type=anime]').textContent='Anime ('+a+')';
+  document.querySelector('.tab[data-type=manga]').textContent='Manga ('+m+')';
+}
+
+// Cards render in pages instead of all at once, so the DOM stays small (and fast)
+// no matter how many thousands of entries exist. More load automatically near the
+// bottom of the scroll via IntersectionObserver — no manual "load more" needed.
+const PAGE_SIZE = 40;
+let currentFilteredEntries = [];
+let renderedCount = 0;
+let listObserver = null;
+
+function progText(e){ return e.type==='anime' ? `S${e.season??1} · E${e.chapter}` : `Ch. ${e.chapter}`; }
+function cardFor(e){
+  const card=document.createElement('div'); card.className='card';
+  const stars = e.rating==null ? '☆☆☆☆☆<span style="margin-left:5px">Unrated</span>' :
+    '★'.repeat(Math.round(e.rating/2)) + '☆'.repeat(5-Math.round(e.rating/2)) + ` <span style="margin-left:5px">${e.rating}/10</span>`;
+  const tagchips=(e.tags||[]).map(tid=>{const t=tagById(tid); if(!t) return ''; return `<span class="tagchip" style="background:${t.color}">${escapeHtml(t.name)}</span>`;}).join('');
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-title">${escapeHtml(e.title)}</div>
+    </div>
+    <div class="card-meta">
+      <span class="pill">${progText(e)}</span>
+      <span class="stars ${e.rating==null?'unranked':''}">${stars}</span>
+    </div>
+    ${tagchips? `<div class="card-meta">${tagchips}</div>`:''}
+    <div class="small dates">Added ${fmtDate(e.dateAdded)} · Edited ${fmtDate(e.dateEdited)}</div>
+    <div class="card-actions">
+      <button class="btn primary" data-open>Open link</button>
+      <button class="btn inc" data-inc>+1</button>
+      <button class="btn" data-edit>Edit</button>
+    </div>`;
+  card.querySelector('[data-open]').onclick=()=>window.open(e.link,'_blank');
+  card.querySelector('[data-edit]').onclick=()=>openEditSheet(e);
+  card.querySelector('[data-inc]').onclick=()=>{
+    e.chapter=Math.floor(Number(e.chapter)||0)+1; e.dateEdited=nowIso(); save();
+    card.querySelector('.pill').textContent=progText(e);
+    card.querySelector('.dates').textContent='Added '+fmtDate(e.dateAdded)+' · Edited '+fmtDate(e.dateEdited);
+    toast(escapeHtml(e.title).slice(0,40)+' → '+progText(e));
+  };
+  return card;
+}
+function appendCards(entries){
+  const list=document.getElementById('list');
+  const frag=document.createDocumentFragment();
+  entries.forEach(e=>frag.appendChild(cardFor(e)));
+  list.appendChild(frag);
+}
+function attachSentinel(){
+  const list=document.getElementById('list');
+  const old=document.getElementById('loadSentinel'); if(old) old.remove();
+  if(listObserver){ listObserver.disconnect(); listObserver=null; }
+  if(renderedCount>=currentFilteredEntries.length) return;
+  const sentinel=document.createElement('div'); sentinel.id='loadSentinel'; sentinel.style.height='1px';
+  list.appendChild(sentinel);
+  listObserver = new IntersectionObserver((obsEntries)=>{
+    obsEntries.forEach(en=>{
+      if(en.isIntersecting){
+        const next = currentFilteredEntries.slice(renderedCount, renderedCount+PAGE_SIZE);
+        renderedCount += next.length;
+        sentinel.remove();
+        appendCards(next);
+        attachSentinel();
+      }
+    });
+  }, {root:list, rootMargin:'600px'});
+  listObserver.observe(sentinel);
+}
+function renderList(){
+  updateTabCounts();
+  const fl=state.filters; document.getElementById('tagFilterBtn').classList.toggle('active', !!(fl.include.length||fl.exclude.length));
+  currentFilteredEntries = currentEntries();
+  const list=document.getElementById('list');
+  if(listObserver){ listObserver.disconnect(); listObserver=null; }
+  if(!currentFilteredEntries.length){
+    const hasAny=state.entries.some(e=>e.type===state.activeType);
+    list.innerHTML = hasAny
+      ? '<div class="empty"><span class="emoji">🔍</span>No matches.<br>Try clearing the search or tag filters.</div>'
+      : '<div class="empty"><span class="emoji">📖</span>Nothing here yet.<br>Tap + to add your first entry.</div>';
+    return;
+  }
+  renderedCount = Math.min(PAGE_SIZE, currentFilteredEntries.length);
+  list.innerHTML='';
+  appendCards(currentFilteredEntries.slice(0, renderedCount));
+  attachSentinel();
+}
+function findEntry(id){ return state.entries.find(e=>e.id===id); }
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// ---------- add/edit sheet ----------
+function openEditSheet(entry){
+  const isNew=!entry;
+  const type=state.activeType;
+  const draft = entry ? {...entry, tags:[...(entry.tags||[])]} : {id:null,type,title:'',link:'',chapter:'',season:'1',rating:null,tags:[]};
+  const sheet=document.getElementById('editSheet');
+  function tagPickerHtml(){
+    return state.tags.map(t=>`<span class="tagopt ${draft.tags.includes(t.id)?'sel':''}" data-tagid="${t.id}" style="${draft.tags.includes(t.id)?`background:${t.color}`:''}">${escapeHtml(t.name)}</span>`).join('') +
+      `<span class="tagopt" id="manageTagsInline">+ Manage tags</span>`;
+  }
+  function ratePickerHtml(){
+    let h='<button class="ratebtn '+(draft.rating==null?'sel':'')+'" data-r="null">–</button>';
+    for(let i=0;i<=10;i++) h+=`<button class="ratebtn ${draft.rating===i?'sel':''}" data-r="${i}">${i}</button>`;
+    return h;
+  }
+  sheet.innerHTML = `
+    <h2>${isNew?'Add':'Edit'} ${type==='anime'?'Anime':'Manga'}</h2>
+    <div class="field"><label>Title</label><input type="text" id="f_title" value="${escapeHtml(draft.title)}" placeholder="e.g. Frieren"></div>
+    <div class="field"><label>Link</label><input type="text" id="f_link" value="${escapeHtml(draft.link)}" placeholder="https://..."></div>
+    <div class="row2">
+      <div class="field"><label>${type==='anime'?'Episode':'Chapter'}</label><input type="text" inputmode="decimal" id="f_chapter" value="${escapeHtml(String(draft.chapter))}" placeholder="e.g. 12"></div>
+      ${type==='anime'?`<div class="field"><label>Season</label><input type="text" inputmode="decimal" id="f_season" value="${escapeHtml(String(draft.season??'1'))}" placeholder="1"></div>`:''}
+    </div>
+    <div class="field"><label>Rating (tap – to leave unranked)</label><div class="ratepick" id="f_rating">${ratePickerHtml()}</div></div>
+    <div class="field"><label>Tags</label><div class="tagpicklist" id="f_tags">${tagPickerHtml()}</div></div>
+    <div id="f_errors"></div>
+    <div class="sheet-actions">
+      ${!isNew?'<button class="btn danger" id="delBtn">Delete</button>':''}
+      <button class="btn" id="cancelBtn">Cancel</button>
+      <button class="btn primary" id="saveBtn">Save</button>
+    </div>`;
+  function reattachRating(){ sheet.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{ draft.rating = b.dataset.r==='null'?null:parseInt(b.dataset.r); sheet.querySelector('#f_rating').innerHTML=ratePickerHtml(); reattachRating(); }); }
+  reattachRating();
+  function reattachTags(){
+    sheet.querySelectorAll('[data-tagid]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.tagid;
+      draft.tags = draft.tags.includes(id) ? draft.tags.filter(x=>x!==id) : [...draft.tags,id];
+      sheet.querySelector('#f_tags').innerHTML=tagPickerHtml(); reattachTags();
+    });
+    const mti=document.getElementById('manageTagsInline'); if(mti) mti.onclick=()=>openTagManager(()=>{ sheet.querySelector('#f_tags').innerHTML=tagPickerHtml(); reattachTags(); });
+  }
+  reattachTags();
+  document.getElementById('cancelBtn').onclick=closeEditSheet;
+  if(!isNew) document.getElementById('delBtn').onclick=()=>{
+    if(confirm('Delete "'+draft.title+'"? This cannot be undone.')){
+      state.entries = state.entries.filter(e=>e.id!==draft.id); save(); closeEditSheet(); renderList();
+    }
+  };
+  document.getElementById('saveBtn').onclick=()=>{
+    const vals={ title:document.getElementById('f_title').value, link:document.getElementById('f_link').value, chapter:document.getElementById('f_chapter').value };
+    const errs=validateEntry(vals);
+    if(!errs.link && vals.link.trim()){
+      const dup=state.entries.find(x=>x.type===type && x.id!==draft.id && x.link.trim().toLowerCase()===vals.link.trim().toLowerCase());
+      if(dup) errs.link='This link is already in your list as "'+escapeHtml(dup.title)+'".';
+    }
+    ['f_title','f_link','f_chapter'].forEach(id=>document.getElementById(id).classList.remove('err'));
+    if(Object.keys(errs).length){
+      document.getElementById('f_errors').innerHTML = Object.entries(errs).map(([k,v])=>{
+        document.getElementById('f_'+k).classList.add('err');
+        return `<div class="errmsg">${v}</div>`;
+      }).join('');
+      return;
+    }
+    const seasonVal = type==='anime' ? (parseFloat(document.getElementById('f_season').value)||1) : undefined;
+    if(isNew){
+      state.entries.push({
+        id:uid(), type, title:vals.title.trim(), link:vals.link.trim(), chapter:Number(vals.chapter),
+        season:seasonVal, rating:draft.rating, tags:draft.tags,
+        dateAdded:nowIso(), dateEdited:nowIso()
+      });
+    } else {
+      const e=findEntry(draft.id);
+      e.title=vals.title.trim(); e.link=vals.link.trim(); e.chapter=Number(vals.chapter);
+      if(type==='anime') e.season=seasonVal;
+      e.rating=draft.rating; e.tags=draft.tags;
+      e.dateEdited=nowIso();
+    }
+    save(); closeEditSheet(); renderList();
+  };
+  openOverlay('editOverlay');
+}
+function closeEditSheet(){ closeOverlay('editOverlay'); }
+document.getElementById('addBtn').onclick=()=>openEditSheet(null);
+
+// ---------- tag manager ----------
+function openTagManager(onChange){
+  const sheet=document.getElementById('menuSheet');
+  const palette=['#e5636b','#e0a75a','#e0d15a','#7cd67c','#5cd6c0','#5b9bd6','#7c9fff','#a679e0','#e079c9','#9ba0a8'];
+  function rows(){
+    return state.tags.map(t=>`
+      <div class="field" style="display:flex;gap:8px;align-items:center;">
+        <span style="width:16px;height:16px;border-radius:50%;background:${t.color};flex-shrink:0;display:inline-block;"></span>
+        <input type="text" data-rename="${t.id}" value="${escapeHtml(t.name)}" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);">
+        <button class="btn danger" style="flex:0 0 auto;padding:7px 10px;" data-deltag="${t.id}">✕</button>
+      </div>`).join('') || '<div class="small">No tags yet.</div>';
+  }
+  sheet.innerHTML = `
+    <h2>Manage Tags</h2>
+    <div id="tagRows">${rows()}</div>
+    <div class="field" style="display:flex;gap:8px;margin-top:14px;">
+      <input type="text" id="newTagName" placeholder="New tag name" style="flex:1;">
+      <button class="btn primary" id="addTagBtn" style="flex:0 0 auto;">Add</button>
+    </div>
+    <div class="sheet-actions"><button class="btn primary" id="closeTagMgr">Done</button></div>`;
+  function attach(){
+    sheet.querySelectorAll('[data-rename]').forEach(inp=>inp.onchange=()=>{
+      const t=state.tags.find(x=>x.id===inp.dataset.rename); if(t){ t.name=inp.value.trim()||t.name; save(); onChange&&onChange(); renderList(); }
+    });
+    sheet.querySelectorAll('[data-deltag]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.deltag;
+      if(!confirm('Delete this tag? It will be removed from all entries.')) return;
+      state.tags=state.tags.filter(t=>t.id!==id);
+      state.entries.forEach(e=>{ e.tags=(e.tags||[]).filter(x=>x!==id); });
+      save(); sheet.querySelector('#tagRows').innerHTML=rows(); attach(); onChange&&onChange(); renderList();
+    });
+  }
+  attach();
+  document.getElementById('addTagBtn').onclick=()=>{
+    const name=document.getElementById('newTagName').value.trim();
+    if(!name) return;
+    if(state.tags.some(t=>t.name.toLowerCase()===name.toLowerCase())){ toast('That tag already exists.'); return; }
+    const color=palette[state.tags.length % palette.length];
+    state.tags.push({id:uid(),name,color}); save();
+    document.getElementById('newTagName').value='';
+    sheet.querySelector('#tagRows').innerHTML=rows(); attach(); onChange&&onChange();
+  };
+  document.getElementById('closeTagMgr').onclick=()=>{ closeOverlay('menuOverlay'); };
+  openOverlay('menuOverlay');
+}
+
+// ---------- tag filter ----------
+document.getElementById('tagFilterBtn').onclick=()=>{
+  const sheet=document.getElementById('tagFilterSheet');
+  const f=state.filters;
+  function chip(t,list,cls){ return `<span class="tagopt ${list.includes(t.id)?'sel':''}" data-flt="${t.id}" data-list="${cls}" style="${list.includes(t.id)?`background:${t.color}`:''}">${escapeHtml(t.name)}</span>`; }
+  function html(){
+    return `
+    <h2>Filter by Tags</h2>
+    <div class="field"><label>Match mode for included tags</label>
+      <div class="togglerow">
+        <button class="togglebtn ${f.mode==='AND'?'on':''}" id="modeAnd">Match ALL (AND)</button>
+        <button class="togglebtn ${f.mode==='OR'?'on':''}" id="modeOr">Match ANY (OR)</button>
+      </div>
+    </div>
+    <div class="field"><label>Include</label><div class="tagpicklist">${state.tags.map(t=>chip(t,f.include,'include')).join('')||'<span class="small">No tags yet — add some in Manage Tags.</span>'}</div></div>
+    <div class="field"><label>Exclude</label><div class="tagpicklist">${state.tags.map(t=>chip(t,f.exclude,'exclude')).join('')}</div></div>
+    <div class="sheet-actions">
+      <button class="btn" id="clearFlt">Clear filters</button>
+      <button class="btn primary" id="doneFlt">Done</button>
+    </div>`;
+  }
+  sheet.innerHTML=html();
+  function attach(){
+    sheet.querySelectorAll('[data-flt]').forEach(b=>b.onclick=()=>{
+      const id=b.dataset.flt, listName=b.dataset.list;
+      const list = listName==='include'?f.include:f.exclude;
+      const idx=list.indexOf(id);
+      if(idx>=0) list.splice(idx,1); else list.push(id);
+      save(); sheet.innerHTML=html(); attach();
+    });
+    document.getElementById('modeAnd').onclick=()=>{ f.mode='AND'; save(); sheet.innerHTML=html(); attach(); };
+    document.getElementById('modeOr').onclick=()=>{ f.mode='OR'; save(); sheet.innerHTML=html(); attach(); };
+    document.getElementById('clearFlt').onclick=()=>{ f.include=[]; f.exclude=[]; save(); sheet.innerHTML=html(); attach(); renderList(); };
+    document.getElementById('doneFlt').onclick=()=>{ closeOverlay('tagFilterOverlay'); renderList(); };
+  }
+  attach();
+  openOverlay('tagFilterOverlay');
+};
+document.getElementById('editOverlay').onclick=(e)=>{ if(e.target.id==='editOverlay') closeEditSheet(); };
+document.getElementById('tagFilterOverlay').onclick=(e)=>{ if(e.target.id==='tagFilterOverlay') closeOverlay(e.currentTarget.id); };
+document.getElementById('menuOverlay').onclick=(e)=>{ if(e.target.id==='menuOverlay') closeOverlay(e.currentTarget.id); };
+document.getElementById('welcomeOverlay').onclick=(e)=>{ if(e.target.id==='welcomeOverlay') closeOverlay(e.currentTarget.id); };
+
+// ---------- import / export ----------
+async function exportData(){
+  const payload = { app:'manage_me', version:1, exportedAt: nowIso(), tags: state.tags, entries: state.entries };
+  const json = JSON.stringify(payload, null, 2);
+  const fname='manage_me_export_'+new Date().toISOString().slice(0,10)+'.json';
+  let dl=null;
+  try{ dl = window.claude ? await window.claude.use('downloads') : null; }catch(e){ logError(e,'downloads-use'); }
+  if(dl){
+    try{ await dl.save({filename:fname, data: json}); state.lastExport=nowIso(); save(); toast('Backup saved.'); return; }
+    catch(e){ logError(e,'downloads-save'); }
+  } else {
+    try{
+      const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+      const a=document.createElement('a'); a.href=url; a.download=fname; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+      state.lastExport=nowIso(); save(); toast('Backup saved to your downloads.'); return;
+    }catch(e){ logError(e,'blob-download'); }
+  }
+  showTextDump(json);
+}
+function showTextDump(json){
+  const sheet=document.getElementById('menuSheet');
+  sheet.innerHTML = `<h2>Export Data</h2><div class="hint">Downloads aren't available here — copy this and save it as a .json file yourself.</div>
+    <textarea id="dumpArea" style="width:100%;height:240px;margin-top:10px;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:12px;" readonly>${escapeHtml(json)}</textarea>
+    <div class="sheet-actions"><button class="btn primary" id="copyDump">Copy</button><button class="btn" id="closeDump">Close</button></div>`;
+  document.getElementById('copyDump').onclick=()=>{ navigator.clipboard?.writeText(json).then(()=>toast('Copied!')).catch(e=>logError(e,'clipboard')); };
+  document.getElementById('closeDump').onclick=()=>closeOverlay('menuOverlay');
+  openOverlay('menuOverlay');
+}
+function detectAndNormalize(json){
+  if(json && typeof json==='object' && !Array.isArray(json) && Array.isArray(json.entries)){
+    return { tags: json.tags||[], entries: json.entries };
+  }
+  if(json && typeof json==='object' && !Array.isArray(json) && (Array.isArray(json.anime)||Array.isArray(json.manga))){
+    const now=nowIso();
+    const entries=[];
+    (json.anime||[]).forEach(it=>entries.push({ type:'anime', title:(it.name||'').toString(), link:(it.url||'').toString(), chapter:parseFloat(it.episode)||0, season:parseFloat(it.season)||1, rating:null, tags:[], dateAdded:now, dateEdited:now }));
+    (json.manga||[]).forEach(it=>entries.push({ type:'manga', title:(it.name||'').toString(), link:(it.url||'').toString(), chapter:parseFloat(it.chapter)||0, rating:null, tags:[], dateAdded:now, dateEdited:now }));
+    return { tags:[], entries };
+  }
+  if(Array.isArray(json)){
+    if(json.length===0) return {tags:[], entries:[]};
+    const isAnime = ('episode' in json[0]) || ('season' in json[0]);
+    const now=nowIso();
+    const entries = json.map(it=>{
+      const base={ title:(it.name||'').toString(), link:(it.url||'').toString(), rating:null, tags:[], dateAdded:now, dateEdited:now };
+      return isAnime
+        ? {...base, type:'anime', chapter:parseFloat(it.episode)||0, season:parseFloat(it.season)||1}
+        : {...base, type:'manga', chapter:parseFloat(it.chapter)||0};
+    });
+    return { tags:[], entries };
+  }
+  throw new Error('Unrecognized file format — expected a Manage Me export, or a Godot anime.save/manga.save file.');
+}
+function mergeTagsAndGetIdMap(importedTags){
+  const map={};
+  importedTags.forEach(it=>{
+    let existing = state.tags.find(t=>t.name.toLowerCase()===it.name.toLowerCase());
+    if(!existing){ existing = {id:uid(), name:it.name, color:it.color||'#7c9fff'}; state.tags.push(existing); }
+    map[it.id]=existing.id;
+  });
+  return map;
+}
+function isDuplicateEntry(e){
+  return state.entries.some(x=>x.type===e.type && x.title.trim().toLowerCase()===e.title.trim().toLowerCase() && x.link.trim().toLowerCase()===e.link.trim().toLowerCase());
+}
+function applyImport(normalized, replace){
+  if(replace){ state.tags=[]; state.entries=[]; }
+  const idMap = mergeTagsAndGetIdMap(normalized.tags||[]);
+  let added=0, skipped=0;
+  normalized.entries.forEach(e=>{
+    if((e.type!=='anime'&&e.type!=='manga')||!String(e.title||'').trim()||!String(e.link||'').trim()){ skipped++; return; }
+    const mappedTags=(e.tags||[]).map(t=>idMap[t]||t).filter(t=>state.tags.some(tg=>tg.id===t));
+    const candidate = {
+      id:uid(), type:e.type, title:(e.title||'').trim(), link:(e.link||'').trim(),
+      chapter: typeof e.chapter==='number'?e.chapter:(parseFloat(e.chapter)||0),
+      season: e.type==='anime' ? (e.season!=null?parseFloat(e.season):1) : undefined,
+      rating: typeof e.rating==='number' ? e.rating : null,
+      tags: mappedTags, dateAdded: e.dateAdded||nowIso(), dateEdited: e.dateEdited||nowIso()
+    };
+    if(!replace && isDuplicateEntry(candidate)){ skipped++; return; }
+    state.entries.push(candidate); added++;
+  });
+  state.onboarded=true; save();
+  closeOverlay('menuOverlay');
+  closeOverlay('welcomeOverlay');
+  renderList();
+  toast(`Import complete: ${added} added${skipped?(', '+skipped+' skipped as duplicates'):''}.`);
+}
+function processImportedText(rawText){
+  let parsed;
+  try{ parsed=JSON.parse(String(rawText).replace(/^\uFEFF/,'').trim()); }catch(e){ document.getElementById('importSummary').innerHTML='<div class="errmsg">Could not read that as JSON.</div>'; return; }
+  let normalized;
+  try{ normalized=detectAndNormalize(parsed); }catch(e){ document.getElementById('importSummary').innerHTML='<div class="errmsg">'+e.message+'</div>'; return; }
+  const animeCount=normalized.entries.filter(x=>x.type==='anime').length;
+  const mangaCount=normalized.entries.filter(x=>x.type==='manga').length;
+  document.getElementById('importSummary').innerHTML = `
+    <div class="hint" style="margin-top:10px;">Found ${animeCount} anime and ${mangaCount} manga ${normalized.tags.length?('and '+normalized.tags.length+' tags '):''}entries.</div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="doMerge">Merge with existing</button>
+      <button class="btn danger" id="doReplace">Replace everything</button>
+    </div>`;
+  document.getElementById('doMerge').onclick=()=>applyImport(normalized,false);
+  document.getElementById('doReplace').onclick=()=>{
+    if(confirm('This deletes all current entries and tags and replaces them with the imported data. Continue?')) applyImport(normalized,true);
+  };
+}
+function openImportFlow(){
+  const sheet=document.getElementById('menuSheet');
+  sheet.innerHTML = `
+    <h2>Import Data</h2>
+    <div class="hint">Accepts a Manage Me export, a Godot <b>anime.save</b> / <b>manga.save</b> file, or pasted JSON text (handy if pulling files off your phone is a hassle — see the "Paste data" tip in the ☰ menu).</div>
+    <div class="field" style="margin-top:10px;"><label>Choose a file</label><input type="file" id="importFileInput"></div>
+    <div class="field"><label>…or paste raw data</label>
+      <textarea id="pasteArea" placeholder="Paste JSON here" style="width:100%;height:110px;padding:10px;border-radius:11px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:12px;"></textarea>
+      <div class="sheet-actions" style="margin-top:8px;">
+        <button class="btn" id="pasteFromClipboard">Paste from clipboard</button>
+        <button class="btn primary" id="usePasted">Use this text</button>
+      </div>
+    </div>
+    <div id="importSummary"></div>
+    <div class="sheet-actions"><button class="btn" id="importCancel">Cancel</button></div>`;
+  document.getElementById('importCancel').onclick=()=>closeOverlay('menuOverlay');
+  document.getElementById('pasteFromClipboard').onclick=async()=>{
+    try{ document.getElementById('pasteArea').value = await navigator.clipboard.readText(); }
+    catch(e){ logError(e,'clipboard-read'); toast('Could not read clipboard — paste manually instead.'); }
+  };
+  document.getElementById('usePasted').onclick=()=>processImportedText(document.getElementById('pasteArea').value);
+  document.getElementById('importFileInput').onchange=(ev)=>{
+    const file=ev.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=()=>processImportedText(reader.result);
+    reader.readAsText(file);
+  };
+  openOverlay('menuOverlay');
+}
+
+// ---------- debug log ----------
+function openDebugLog(){
+  const sheet=document.getElementById('menuSheet');
+  function rows(){
+    if(!errorLog.length) return '<div class="small">No errors recorded. ✅</div>';
+    return errorLog.map(e=>`<div class="logrow"><div class="small">${fmtDateTime(e.time)} · ${escapeHtml(e.context)}</div><div style="font-size:12.5px;margin-top:3px;">${escapeHtml(e.message)}</div></div>`).join('');
+  }
+  sheet.innerHTML = `<h2>Debug Log</h2><div style="max-height:48vh;overflow-y:auto;">${rows()}</div>
+    <div class="sheet-actions">
+      <button class="btn" id="copyLog">Copy</button>
+      <button class="btn danger" id="clearLog">Clear</button>
+      <button class="btn primary" id="closeLog">Close</button>
+    </div>`;
+  document.getElementById('copyLog').onclick=()=>{ navigator.clipboard?.writeText(JSON.stringify(errorLog,null,2)).then(()=>toast('Copied!')).catch(e=>logError(e,'clipboard')); };
+  document.getElementById('clearLog').onclick=()=>{ errorLog=[]; idbSet('error_log',errorLog).catch(()=>{}); openDebugLog(); };
+  document.getElementById('closeLog').onclick=()=>closeOverlay('menuOverlay');
+  openOverlay('menuOverlay');
+}
+
+// ---------- first-run welcome ----------
+function showWelcomeIfNeeded(){
+  if(state.onboarded || state.entries.length>0) return;
+  const sheet=document.getElementById('welcomeSheet');
+  sheet.innerHTML = `
+    <h2>Welcome to Manage Me 👋</h2>
+    <div class="hint">Moving from the old app? Import your <b>anime.save</b> / <b>manga.save</b> files, or a Manage Me backup. You can also do this later from the ☰ menu.</div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="wImport">Import my old data</button>
+      <button class="btn" id="wSkip">Start fresh</button>
+    </div>`;
+  document.getElementById('wImport').onclick=()=>{ openImportFlow(); closeOverlay('welcomeOverlay'); };
+  document.getElementById('wSkip').onclick=()=>{ state.onboarded=true; save(); closeOverlay('welcomeOverlay'); };
+  openOverlay('welcomeOverlay');
+}
+
+// ---------- main menu ----------
+document.getElementById('menuBtn').onclick=()=>{
+  const sheet=document.getElementById('menuSheet');
+  sheet.innerHTML=`
+    <h2>Menu</h2>
+    <div class="field"><button class="btn primary" id="mtags">🏷 Manage Tags</button></div>
+    <div class="field"><button class="btn" id="mimport">⬇ Import data</button></div>
+    <div class="field"><button class="btn" id="mexport">⬆ Export data</button></div>
+    <div class="field"><button class="btn" id="mdebug">🐞 Debug Log</button></div>
+    <div class="hint">Tip: on Android Chrome, tap ⋮ → "Add to Home screen" to put Manage Me on your home screen like an app.</div>
+    <div class="hint">Last backup: ${state.lastExport ? fmtDate(state.lastExport) : 'never — tap Export data to make one'}</div>
+    <div class="hint">Migrating old data? Import now supports pasting raw JSON directly — no file wrangling needed.</div>
+    <div class="sheet-actions"><button class="btn" id="mclose">Close</button></div>`;
+  document.getElementById('mtags').onclick=()=>openTagManager(()=>{});
+  document.getElementById('mimport').onclick=openImportFlow;
+  document.getElementById('mexport').onclick=exportData;
+  document.getElementById('mdebug').onclick=openDebugLog;
+  document.getElementById('mclose').onclick=()=>closeOverlay('menuOverlay');
+  openOverlay('menuOverlay');
+};
+
+// ---------- init ----------
+async function init(){
+  try{
+    let loaded = await idbGet('app_state');
+    if(!loaded){
+      try{
+        const raw = localStorage.getItem('manage_me_data_v1');
+        if(raw){ loaded = JSON.parse(raw); await idbSet('app_state', loaded); localStorage.removeItem('manage_me_data_v1'); }
+      }catch(e){ logError(e,'migrate-localStorage'); }
+    }
+    if(loaded) state = Object.assign(defaultState(), loaded);
+    errorLog = (await idbGet('error_log')) || [];
+  }catch(e){ logError(e,'init'); }
+  try{ if(navigator.storage && navigator.storage.persist) navigator.storage.persist(); }catch(e){}
+  document.getElementById('sortSel').value = state.sort || 'edited_desc';
+  applyTheme();
+  syncActiveTab();
+  renderList();
+  showWelcomeIfNeeded();
+}
+init();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(e => logError(e,'sw-register'));
+  });
+}
+
+</script>
+</body>
+</html>
